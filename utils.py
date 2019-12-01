@@ -12,7 +12,6 @@ def save_boxing_image(image, targets):
 
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-
     for target in targets:
         target = target[0].astype(np.int)
 

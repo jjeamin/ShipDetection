@@ -29,6 +29,7 @@ class ToTensor(object):
 
         return image, targets
 
+
 class Resize(object):
     def __init__(self, output_size):
         """

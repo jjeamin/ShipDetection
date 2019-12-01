@@ -1,29 +1,40 @@
-import torch
+from torchvision import transforms
 from datasets import CustomDataset, custom_collate
 from augmentation import *
 import utils
+from models.EfficientNet import EfficientDetv1
+from models.yolov3 import Yolov3
+from torchsummary import summary
+
 
 if torch.cuda.is_available():
     device = 'cuda'
-    #torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+
 else:
     device = 'cpu'
-    #torch.set_default_tensor_type('torch.FloatTensor')
+    torch.set_default_tensor_type('torch.FloatTensor')
 
-transform = Compose([Resize((1000, 1000)),
+transform = Compose([Resize((410, 410)),
                      ToTensor()])
 
-custom_datasets = CustomDataset(transform=transform)
+torch_transform = transforms.Compose([transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]), ])
+
+custom_datasets = CustomDataset(transform=transform, torch_transform=torch_transform)
 
 custom_loader = torch.utils.data.DataLoader(
         dataset=custom_datasets,
-        batch_size=2,
+        batch_size=1,
         shuffle=True,
         collate_fn=custom_collate)
 
+model = Yolov3().to(device)
+#summary(model, (3, 416, 416))
+
 for i, (img, targets) in enumerate(custom_loader):
     utils.save_boxing_image(img[0], targets[0])
-
+    img = img.to(device).float()
+    model.train(img, targets)
     break
 
 

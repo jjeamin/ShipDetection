@@ -14,19 +14,19 @@ def custom_collate(batch):
     targets = [x[1] for x in batch]
     images = [x[0] for x in batch]
 
-    print(images)
-
     return torch.stack(images, 0), targets
 
 
 class CustomDataset(data.Dataset):
     def __init__(self,
                  dataType='train',
-                 transform=None):
+                 transform=None,
+                 torch_transform=None):
         self.file_list = os.listdir(TRAIN_IMAGE_PATH)
         self.imgs = [os.path.join(TRAIN_IMAGE_PATH, x) for x in self.file_list]
         self.labels = self.parse_json(TRAIN_LABEL_PATH)
         self.transform = transform
+        self.torch_transform = torch_transform
 
     def __getitem__(self, index):
         '''
@@ -43,6 +43,9 @@ class CustomDataset(data.Dataset):
 
         if self.transform is not None:
             img, targets = self.transform(img, targets)
+
+        if self.torch_transform is not None:
+            img = self.torch_transform(img)
 
         return img, targets
 
